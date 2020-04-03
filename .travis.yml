@@ -86,7 +86,7 @@ matrix:
     name: "Compile tests"
     env: RUSTFLAGS="--cap-lints=warn"
     script:
-    - (cd diesel_compile_tests && cargo +$TRAVIS_RUST_VERSION test)
+    - (cd diesel_compile_tests && cargo test)
   - rust: 1.37.0
     name: "Rustfmt && Clippy"
     script:
