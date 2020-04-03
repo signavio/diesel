@@ -129,7 +129,6 @@
 #[macro_use]
 extern crate bitflags;
 extern crate byteorder;
-#[macro_use]
 extern crate diesel_derives;
 
 #[macro_use]
