@@ -14,7 +14,7 @@ pub type PoolError = self::r2d2::Error;
 
 use std::convert::Into;
 use std::fmt;
-use std::marker::{PhantomData, Send};
+use std::marker::{PhantomData, Send, Sync};
 use std::string::String;
 use std::option::{Option, Option::None, Option::Some};
 use std::sync::Arc;
