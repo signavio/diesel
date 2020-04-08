@@ -51,7 +51,7 @@ impl<T> ConnectionManager<T> {
         }
     }
 
-    pub fn newWithUrlProvider(url_provider: Arc<UrlProvider>) -> Self {
+    pub fn new_with_url_provider(url_provider: Arc<UrlProvider>) -> Self {
         ConnectionManager {
             database_url: "".into(),
             url_provider: Some(url_provider),
@@ -184,6 +184,8 @@ mod tests {
     use std::sync::mpsc;
     use std::sync::Arc;
     use std::thread;
+    use std::string::String;
+    use std::convert::Into;
 
     use r2d2::*;
     use test_helpers::*;
@@ -245,5 +247,25 @@ mod tests {
 
         let query = select("foo".into_sql::<Text>());
         assert_eq!("foo", query.get_result::<String>(&conn).unwrap());
+    }
+
+    struct TestUrlProvider {}
+    impl UrlProvider for TestUrlProvider {
+        fn provide_url(&self) -> String {
+            ":memory:".into()
+        }
+    }
+
+    #[test]
+    fn provide_dynamic_url() {
+        let url_provider: Arc<UrlProvider> = Arc::new(TestUrlProvider);
+        let manager = ConnectionManager::<TestConnection>::new_with_url_provider(url_provider.clone());
+        let pool = Pool::builder()
+            .max_size(1)
+            .test_on_check_out(true)
+            .build(manager)
+            .unwrap();
+
+        pool.get().unwrap();
     }
 }
