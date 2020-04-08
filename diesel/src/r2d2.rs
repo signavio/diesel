@@ -15,6 +15,9 @@ pub type PoolError = self::r2d2::Error;
 use std::convert::Into;
 use std::fmt;
 use std::marker::PhantomData;
+use std::string::String;
+use std::option::{Option, Option::None, Option::Some};
+use std::sync::Arc;
 
 use backend::UsesAnsiSavepointSyntax;
 use connection::{AnsiTransactionManager, SimpleConnection};
@@ -31,6 +34,7 @@ use sql_types::HasSqlType;
 #[derive(Debug, Clone)]
 pub struct ConnectionManager<T> {
     database_url: String,
+    url_provider: Option<Arc<UrlProvider>>,
     _marker: PhantomData<T>,
 }
 
@@ -42,6 +46,15 @@ impl<T> ConnectionManager<T> {
     pub fn new<S: Into<String>>(database_url: S) -> Self {
         ConnectionManager {
             database_url: database_url.into(),
+            url_provider: None,
+            _marker: PhantomData,
+        }
+    }
+
+    pub fn newWithUrlProvider(url_provider: Arc<UrlProvider>) -> Self {
+        ConnectionManager {
+            database_url: "".into(),
+            url_provider: Some(url_provider),
             _marker: PhantomData,
         }
     }
@@ -83,7 +96,11 @@ where
     type Error = Error;
 
     fn connect(&self) -> Result<T, Error> {
-        T::establish(&self.database_url).map_err(Error::ConnectionError)
+        let db_url = match &self.url_provider {
+            Some(url_provider) => &url_provider.provide_url(),
+            _ => &self.database_url
+        };
+        T::establish(db_url).map_err(Error::ConnectionError)
     }
 
     fn is_valid(&self, conn: &mut T) -> Result<(), Error> {
@@ -152,6 +169,14 @@ where
     fn transaction_manager(&self) -> &Self::TransactionManager {
         (&**self).transaction_manager()
     }
+}
+
+/// Trait to provide the user the option to change parameters of the URL at runtime.
+/// E.g. to implement password rotation
+pub trait UrlProvider {
+
+    /// Provides database url to create a new connection
+    fn provide_url(&self) -> String;
 }
 
 #[cfg(test)]
