@@ -25,6 +25,7 @@ use deserialize::QueryableByName;
 use prelude::*;
 use query_builder::{AsQuery, QueryFragment, QueryId};
 use sql_types::HasSqlType;
+use std::borrow::ToOwned;
 
 /// An r2d2 connection manager for use with Diesel.
 ///
@@ -97,10 +98,10 @@ where
 
     fn connect(&self) -> Result<T, Error> {
         let db_url = match &self.url_provider {
-            Some(url_provider) => &url_provider.provide_url(),
-            _ => &self.database_url
+            Some(url_provider) => url_provider.provide_url(),
+            _ => self.database_url.to_owned()
         };
-        T::establish(db_url).map_err(Error::ConnectionError)
+        T::establish(&db_url).map_err(Error::ConnectionError)
     }
 
     fn is_valid(&self, conn: &mut T) -> Result<(), Error> {
