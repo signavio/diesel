@@ -14,7 +14,7 @@ pub type PoolError = self::r2d2::Error;
 
 use std::convert::Into;
 use std::fmt;
-use std::marker::PhantomData;
+use std::marker::{PhantomData, Send};
 use std::string::String;
 use std::option::{Option, Option::None, Option::Some};
 use std::sync::Arc;
@@ -173,7 +173,7 @@ where
 
 /// Trait to provide the user the option to change parameters of the URL at runtime.
 /// E.g. to implement password rotation
-pub trait UrlProvider {
+pub trait UrlProvider:  Send + 'static {
 
     /// Provides database url to create a new connection
     fn provide_url(&self) -> String;
