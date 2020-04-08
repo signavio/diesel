@@ -18,6 +18,8 @@ use std::marker::{PhantomData, Send, Sync};
 use std::string::String;
 use std::option::{Option, Option::None, Option::Some};
 use std::sync::Arc;
+use std::fmt::Debug;
+use std::clone::Clone;
 
 use backend::UsesAnsiSavepointSyntax;
 use connection::{AnsiTransactionManager, SimpleConnection};
@@ -173,7 +175,7 @@ where
 
 /// Trait to provide the user the option to change parameters of the URL at runtime.
 /// E.g. to implement password rotation
-pub trait UrlProvider:  Send + Sync + 'static {
+pub trait UrlProvider:  Send + Sync + Debug + Clone + 'static {
 
     /// Provides database url to create a new connection
     fn provide_url(&self) -> String;
