@@ -173,7 +173,7 @@ where
 
 /// Trait to provide the user the option to change parameters of the URL at runtime.
 /// E.g. to implement password rotation
-pub trait UrlProvider:  Send + 'static {
+pub trait UrlProvider:  Send + Sync + 'static {
 
     /// Provides database url to create a new connection
     fn provide_url(&self) -> String;
